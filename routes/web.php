@@ -12,6 +12,9 @@ use App\Http\Controllers\CouponController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\JobListingController;
+use App\Http\Controllers\MediaController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PointController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
@@ -74,6 +77,43 @@ Route::prefix('reviews')->name('reviews.')->middleware('auth')->group(function (
     Route::post('/{review}/helpful', [\App\Http\Controllers\ReviewController::class, 'markHelpful'])->name('helpful');
     Route::post('/{review}/not-helpful', [\App\Http\Controllers\ReviewController::class, 'markNotHelpful'])->name('not-helpful');
     Route::post('/{review}/reply', [\App\Http\Controllers\ReviewController::class, 'reply'])->name('reply');
+});
+
+// Points System
+Route::prefix('points')->name('points.')->middleware('auth')->group(function () {
+    Route::get('/', [PointController::class, 'index'])->name('index');
+    Route::get('/packages', [PointController::class, 'packages'])->name('packages');
+    Route::post('/purchase', [PointController::class, 'purchase'])->name('purchase');
+    Route::post('/redeem', [PointController::class, 'redeem'])->name('redeem');
+    Route::post('/transfer', [PointController::class, 'transfer'])->name('transfer');
+});
+
+// Notifications
+Route::prefix('notifications')->name('notifications.')->middleware('auth')->group(function () {
+    Route::get('/', [NotificationController::class, 'index'])->name('index');
+    Route::get('/recent', [NotificationController::class, 'recent'])->name('recent');
+    Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
+    Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('read');
+    Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+    Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
+    Route::delete('/read/all', [NotificationController::class, 'deleteAllRead'])->name('delete-all-read');
+    Route::get('/preferences', [NotificationController::class, 'preferences'])->name('preferences');
+    Route::post('/preferences', [NotificationController::class, 'updatePreferences'])->name('preferences.update');
+});
+
+// Media Management
+Route::prefix('media')->name('media.')->middleware('auth')->group(function () {
+    Route::get('/', [MediaController::class, 'index'])->name('index');
+    Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
+    Route::post('/bulk-upload', [MediaController::class, 'bulkUpload'])->name('bulk-upload');
+    Route::get('/{media}', [MediaController::class, 'show'])->name('show');
+    Route::patch('/{media}', [MediaController::class, 'update'])->name('update');
+    Route::delete('/{media}', [MediaController::class, 'destroy'])->name('destroy');
+    Route::post('/bulk-delete', [MediaController::class, 'bulkDelete'])->name('bulk-delete');
+    Route::post('/reorder', [MediaController::class, 'reorder'])->name('reorder');
+    Route::post('/move-to-collection', [MediaController::class, 'moveToCollection'])->name('move-to-collection');
+    Route::get('/select', [MediaController::class, 'select'])->name('select');
+    Route::get('/{media}/download', [MediaController::class, 'download'])->name('download');
 });
 
 // Business Listings - Public
@@ -473,6 +513,36 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::post('/{review}/reject', [\App\Http\Controllers\Admin\ReviewController::class, 'reject'])->name('reject');
         Route::delete('/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('destroy');
         Route::post('/bulk-action', [\App\Http\Controllers\Admin\ReviewController::class, 'bulkAction'])->name('bulk-action');
+    });
+
+    // Points Management
+    Route::prefix('points')->name('points.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PointController::class, 'index'])->name('index');
+        Route::get('/packages', [\App\Http\Controllers\Admin\PointController::class, 'packages'])->name('packages');
+        Route::get('/packages/create', [\App\Http\Controllers\Admin\PointController::class, 'createPackage'])->name('packages.create');
+        Route::post('/packages', [\App\Http\Controllers\Admin\PointController::class, 'storePackage'])->name('packages.store');
+        Route::get('/packages/{package}/edit', [\App\Http\Controllers\Admin\PointController::class, 'editPackage'])->name('packages.edit');
+        Route::patch('/packages/{package}', [\App\Http\Controllers\Admin\PointController::class, 'updatePackage'])->name('packages.update');
+        Route::delete('/packages/{package}', [\App\Http\Controllers\Admin\PointController::class, 'destroyPackage'])->name('packages.destroy');
+        Route::post('/credit', [\App\Http\Controllers\Admin\PointController::class, 'creditPoints'])->name('credit');
+        Route::post('/debit', [\App\Http\Controllers\Admin\PointController::class, 'debitPoints'])->name('debit');
+        Route::post('/{point}/approve', [\App\Http\Controllers\Admin\PointController::class, 'approveTransaction'])->name('approve');
+        Route::post('/{point}/reject', [\App\Http\Controllers\Admin\PointController::class, 'rejectTransaction'])->name('reject');
+        Route::post('/bulk-action', [\App\Http\Controllers\Admin\PointController::class, 'bulkAction'])->name('bulk-action');
+        Route::get('/analytics', [\App\Http\Controllers\Admin\PointController::class, 'analytics'])->name('analytics');
+    });
+
+    // Notifications Management
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\NotificationController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\NotificationController::class, 'store'])->name('store');
+        Route::post('/send-test', [\App\Http\Controllers\Admin\NotificationController::class, 'sendTest'])->name('send-test');
+        Route::delete('/{notification}', [\App\Http\Controllers\Admin\NotificationController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-delete', [\App\Http\Controllers\Admin\NotificationController::class, 'bulkDelete'])->name('bulk-delete');
+        Route::get('/templates', [\App\Http\Controllers\Admin\NotificationController::class, 'templates'])->name('templates');
+        Route::post('/send-from-template', [\App\Http\Controllers\Admin\NotificationController::class, 'sendFromTemplate'])->name('send-from-template');
+        Route::get('/analytics', [\App\Http\Controllers\Admin\NotificationController::class, 'analytics'])->name('analytics');
     });
 
     // Settings Management
