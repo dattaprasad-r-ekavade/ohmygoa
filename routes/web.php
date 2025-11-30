@@ -14,6 +14,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ServiceExpertController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,11 @@ Route::view('/how-to', 'how-to')->name('how-to');
 Route::view('/faq', 'faq')->name('faq');
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy');
 Route::view('/terms-of-use', 'terms-of-use')->name('terms');
+
+// Search
+Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+Route::get('/search/results', [SearchController::class, 'search'])->name('search.results');
+Route::get('/search/autocomplete', [SearchController::class, 'autocomplete'])->name('search.autocomplete');
 
 // Business Listings - Public
 Route::prefix('listings')->name('listings.')->group(function () {
