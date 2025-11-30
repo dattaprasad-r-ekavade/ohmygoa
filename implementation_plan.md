@@ -5,7 +5,7 @@
 **Tech Stack:** Laravel 12.40.2, PHP 8.2.12, SQLite (MySQL-compatible), Razorpay (Mocked), Blade Templates
 **Timeline:** 12-16 weeks
 **Total Tasks:** 52
-**Completed:** 22/52 (42%)
+**Completed:** 27/52 (52%)
 **Estimated Effort:** ~600-800 hours
 
 ## Key MVP Features
@@ -247,34 +247,65 @@
 - Built comprehensive Admin\ClassifiedController with full CRUD, bulk actions, statistics
 - Featured/urgent toggles, expiry extension, listing upgrades
 
-### 23. Community Forums & Q&A
-- Build community features (community.html), discussion forums, Q&A sections, user interactions, community guidelines, content moderation, community categories
+### ✅ 23. Community Forums & Q&A [COMPLETED]
+- Created qa_questions table with categories, tags, votes, accepted answers, status tracking
+- Created qa_answers table with votes, accepted answer flag
+- Created votes table for upvote/downvote tracking (polymorphic)
+- Built QaQuestion model with relationships (user, category, answers, votes), scopes, and answer acceptance
+- Built QaAnswer model with relationships and voting functionality
+- Built Vote model with static upvote/downvote/removeVote methods
+- Implemented QaController with question posting, answering, voting, and accepted answers
+- Added complete Q&A routes with authentication middleware
 
-### 18. Product Marketplace Module
-- Build product listing (products.html, product-details.html, db-products.html), product categories, shopping cart, inventory management, product search/filter, seller dashboard
+### ✅ 24. Global Search System [COMPLETED]
+- Created searches table to track all search queries, results count, filters, IP addresses
+- Built Search model with search logging and analytics methods
+- Enhanced SearchController to search across 8 content types simultaneously:
+  * Listings, Jobs, Products, Events (existing)
+  * Service Experts, Classifieds, Places, News (newly integrated)
+- Implemented search autocomplete with recent and popular suggestions
+- Added search filtering by location, category, and content type
+- Search logging for analytics and trending queries
 
-### 19. Places/Attractions Directory
-- Implement places listing (places/), tourist attraction details, location mapping, place categories (beaches, churches, forts), visitor info, place reviews, photo galleries
+### ✅ 25. Enquiry System Enhancement [COMPLETED]
+- Enhanced enquiries table with read_at and replied_at timestamps for workflow tracking
+- Updated Enquiry model with new scopes (replied, closed, byStatus)
+- Added methods: markAsReplied(), close(), getStatuses()
+- Created EnquiryController for public enquiry submission (polymorphic to any content)
+- Built Admin\EnquiryController with comprehensive management:
+  * Filtering by status, type, and search
+  * Mark as read/replied/closed workflows
+  * Admin notes for internal tracking
+  * Bulk actions (mark_read, mark_replied, close, delete)
+  * Statistics dashboard with daily enquiry tracking
 
-### 20. Classifieds Module
-- Create classifieds system (classifieds/), ad posting for buy/sell, property rentals, services, classifieds categories, ad management, free vs paid listings, ad expiry
+### ✅ 26. Admin Dashboard Core [COMPLETED]
+- Created comprehensive Admin\DashboardController with 40+ metrics:
+  * User statistics (total, by role, new today/month, verified, suspended)
+  * Subscription analytics (active, expiring soon)
+  * Content statistics across all 9 modules (listings, jobs, products, events, classifieds, service experts, news, places, and more)
+  * Financial metrics (total revenue, monthly revenue, today revenue)
+  * Enquiry tracking (total, new, today)
+- Recent activity feeds for users, listings, payments, enquiries
+- Chart data for user registrations (last 30 days) and revenue (last 12 months)
+- Analytics page with top performing content, category/location performance
+- Ready for dashboard Blade template integration
 
-### 21. Community & Forums
-- Build community features (community.html), discussion forums, Q&A sections, user interactions, community guidelines, content moderation, community categories
+### ✅ 27. Admin User Management [COMPLETED]
+- Built comprehensive Admin\UserController with full CRUD operations
+- User listing with filters (role, status, search) and relationship counts
+- User detail view with all associated content and payment history
+- Create/edit users with role assignment and email verification
+- Advanced user actions:
+  * Soft delete/restore/force delete
+  * Email verification toggle
+  * Role changes (free/business/admin)
+  * Suspend/unsuspend accounts
+- Bulk actions supporting multiple users at once (delete, verify, suspend, unsuspend, change_role)
+- User statistics page with growth charts and subscription tracking
+- Replaced old UserManagementController routes with new comprehensive controller
 
-### 22. Search & Filter System
-- Implement global search, category-based filters, location filters, price range filters, rating filters, advanced search options, search result pages for all modules
-
-### 23. Enquiry & Communication System
-- Build enquiry forms (db-enquiry.html), contact us (contact-us.html), business inquiries, messaging system, email notifications, enquiry management dashboard
-
-### 24. Admin Dashboard - Core
-- Create comprehensive admin dashboard (admin/), overview analytics, user management (admin-all-users.html), business verification, content moderation interface, system settings
-
-### 25. Admin - User Management
-- Build admin user controls: all users, free/paid/premium users (admin-free-users.html, admin-paid-users.html), user details, user billing, activate/deactivate users, user verification
-
-### 26. Admin - Business & Listing Management
+### 28. Admin - Business & Listing Management
 - Implement admin listing management (admin-all-listings.html), edit listings, business verification, claim approvals (admin-claim-listing.html), category management (admin-all-category.html)
 
 ### 27. Admin - Content Moderation
