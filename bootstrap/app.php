@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Middleware\ApiRateLimiting;
 use App\Http\Middleware\CheckUserActive;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\SubscriptionRequired;
 use App\Http\Middleware\PointsRequired;
 use App\Http\Middleware\RateLimiting;
+use App\Http\Middleware\SanitizeInput;
+use App\Http\Middleware\SecureHeaders;
 use App\Http\Middleware\TrackViews;
 use App\Http\Middleware\CheckMaintenanceMode;
 use Illuminate\Foundation\Application;
@@ -27,12 +30,20 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscribed' => SubscriptionRequired::class,
             'points' => PointsRequired::class,
             'throttle.custom' => RateLimiting::class,
+            'throttle.api' => ApiRateLimiting::class,
             'track.views' => TrackViews::class,
+            'sanitize' => SanitizeInput::class,
+            'secure.headers' => SecureHeaders::class,
         ]);
         
         $middleware->web(append: [
             CheckUserActive::class,
             CheckMaintenanceMode::class,
+            SecureHeaders::class,
+        ]);
+        
+        $middleware->api(prepend: [
+            'throttle.api:60',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
