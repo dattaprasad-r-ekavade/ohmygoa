@@ -247,4 +247,282 @@ class ProfileApiController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Purchase points.
+     */
+    public function purchasePoints(Request $request)
+    {
+        $request->validate([
+            'package_id' => 'required|exists:point_packages,id',
+            'payment_method' => 'required|string',
+        ]);
+
+        $user = $request->user();
+        $package = \App\Models\PointPackage::findOrFail($request->package_id);
+
+        // Create transaction
+        $transaction = \App\Models\Transaction::create([
+            'user_id' => $user->id,
+            'amount' => $package->price,
+            'type' => 'points_purchase',
+            'status' => 'pending',
+            'payment_method' => $request->payment_method,
+            'description' => "Purchase {$package->points} points",
+        ]);
+
+        // In production, integrate with payment gateway
+        // For now, auto-approve for development
+        $transaction->update(['status' => 'completed']);
+
+        // Add points to user
+        $user->increment('points_balance', $package->points);
+
+        // Log activity
+        \DB::table('activity_logs')->insert([
+            'user_id' => $user->id,
+            'activity_type' => 'points_purchased',
+            'description' => "Purchased {$package->points} points for ₹{$package->price}",
+            'metadata' => json_encode(['package_id' => $package->id, 'transaction_id' => $transaction->id]),
+            'created_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Points purchased successfully',
+            'transaction' => $transaction,
+            'points_balance' => $user->points_balance,
+        ]);
+    }
+
+    /**
+     * Redeem points.
+     */
+    public function redeemPoints(Request $request)
+    {
+        $request->validate([
+            'points' => 'required|integer|min:100',
+            'type' => 'required|in:promote_listing,boost_event,feature_job,highlight_product',
+            'item_id' => 'required|integer',
+        ]);
+
+        $user = $request->user();
+
+        if ($user->points_balance < $request->points) {
+            return response()->json([
+                'message' => 'Insufficient points balance',
+            ], 400);
+        }
+
+        // Deduct points
+        $user->decrement('points_balance', $request->points);
+
+        // Apply benefit based on type
+        switch ($request->type) {
+            case 'promote_listing':
+                \App\Models\BusinessListing::findOrFail($request->item_id)->update(['is_featured' => true]);
+                break;
+            case 'boost_event':
+                \App\Models\Event::findOrFail($request->item_id)->update(['is_featured' => true]);
+                break;
+            case 'feature_job':
+                \App\Models\JobListing::findOrFail($request->item_id)->update(['is_featured' => true]);
+                break;
+            case 'highlight_product':
+                \App\Models\Product::findOrFail($request->item_id)->update(['is_featured' => true]);
+                break;
+        }
+
+        // Log activity
+        \DB::table('activity_logs')->insert([
+            'user_id' => $user->id,
+            'activity_type' => 'points_spent',
+            'description' => "Redeemed {$request->points} points for {$request->type}",
+            'metadata' => json_encode(['type' => $request->type, 'item_id' => $request->item_id]),
+            'created_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Points redeemed successfully',
+            'points_balance' => $user->points_balance,
+        ]);
+    }
+
+    /**
+     * Submit a review.
+     */
+    public function addReview(Request $request)
+    {
+        $request->validate([
+            'reviewable_type' => 'required|string',
+            'reviewable_id' => 'required|integer',
+            'rating' => 'required|integer|min:1|max:5',
+            'review' => 'required|string|max:1000',
+        ]);
+
+        $user = $request->user();
+
+        // Check if already reviewed
+        $existing = \App\Models\Review::where('user_id', $user->id)
+            ->where('reviewable_type', $request->reviewable_type)
+            ->where('reviewable_id', $request->reviewable_id)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'You have already reviewed this item',
+            ], 400);
+        }
+
+        $review = \App\Models\Review::create([
+            'user_id' => $user->id,
+            'reviewable_type' => $request->reviewable_type,
+            'reviewable_id' => $request->reviewable_id,
+            'rating' => $request->rating,
+            'review' => $request->review,
+            'status' => 'approved', // Auto-approve for now
+        ]);
+
+        return response()->json([
+            'message' => 'Review submitted successfully',
+            'review' => $review,
+        ], 201);
+    }
+
+    /**
+     * Update a review.
+     */
+    public function updateReview(Request $request, $id)
+    {
+        $request->validate([
+            'rating' => 'sometimes|integer|min:1|max:5',
+            'review' => 'sometimes|string|max:1000',
+        ]);
+
+        $user = $request->user();
+        $review = \App\Models\Review::where('user_id', $user->id)->findOrFail($id);
+
+        $review->update($request->only(['rating', 'review']));
+
+        return response()->json([
+            'message' => 'Review updated successfully',
+            'review' => $review,
+        ]);
+    }
+
+    /**
+     * Delete a review.
+     */
+    public function deleteReview($id)
+    {
+        $user = auth()->user();
+        $review = \App\Models\Review::where('user_id', $user->id)->findOrFail($id);
+
+        $review->delete();
+
+        return response()->json([
+            'message' => 'Review deleted successfully',
+        ]);
+    }
+
+    /**
+     * Send an enquiry.
+     */
+    public function sendEnquiry(Request $request)
+    {
+        $request->validate([
+            'enquirable_type' => 'required|string',
+            'enquirable_id' => 'required|integer',
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $user = $request->user();
+
+        $enquiry = \App\Models\Enquiry::create([
+            'user_id' => $user->id,
+            'enquirable_type' => $request->enquirable_type,
+            'enquirable_id' => $request->enquirable_id,
+            'message' => $request->message,
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'message' => 'Enquiry sent successfully',
+            'enquiry' => $enquiry,
+        ], 201);
+    }
+
+    /**
+     * Get user's enquiries.
+     */
+    public function myEnquiries(Request $request)
+    {
+        $user = $request->user();
+
+        $enquiries = $user->enquiries()
+            ->with(['enquirable'])
+            ->orderByDesc('created_at')
+            ->paginate($request->input('per_page', 20));
+
+        return response()->json([
+            'data' => $enquiries->items(),
+            'meta' => [
+                'current_page' => $enquiries->currentPage(),
+                'last_page' => $enquiries->lastPage(),
+                'per_page' => $enquiries->perPage(),
+                'total' => $enquiries->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Upload media file.
+     */
+    public function uploadMedia(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx|max:10240',
+            'type' => 'required|in:image,document,video',
+        ]);
+
+        $user = $request->user();
+
+        $path = $request->file('file')->store('media/' . $request->type . 's', 'public');
+
+        $media = \App\Models\Media::create([
+            'user_id' => $user->id,
+            'file_path' => $path,
+            'file_name' => $request->file('file')->getClientOriginalName(),
+            'file_type' => $request->type,
+            'file_size' => $request->file('file')->getSize(),
+            'mime_type' => $request->file('file')->getMimeType(),
+        ]);
+
+        return response()->json([
+            'message' => 'Media uploaded successfully',
+            'media' => [
+                'id' => $media->id,
+                'url' => asset('storage/' . $path),
+                'file_name' => $media->file_name,
+                'file_type' => $media->file_type,
+            ],
+        ], 201);
+    }
+
+    /**
+     * Delete media file.
+     */
+    public function deleteMedia($id)
+    {
+        $user = auth()->user();
+        $media = \App\Models\Media::where('user_id', $user->id)->findOrFail($id);
+
+        // Delete file from storage
+        \Storage::disk('public')->delete($media->file_path);
+
+        $media->delete();
+
+        return response()->json([
+            'message' => 'Media deleted successfully',
+        ]);
+    }
 }

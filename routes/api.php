@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\EventApiController;
 use App\Http\Controllers\Api\JobListingApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ProfileApiController;
+use App\Http\Controllers\Api\SearchApiController;
+use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\LocationApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,6 +44,21 @@ Route::prefix('v1')->group(function () {
     // Coupons
     Route::get('/coupons', [CouponApiController::class, 'index']);
     Route::get('/coupons/{id}', [CouponApiController::class, 'show']);
+
+    // Search
+    Route::get('/search', [SearchApiController::class, 'search']);
+    Route::get('/search/autocomplete', [SearchApiController::class, 'autocomplete']);
+    Route::get('/search/suggestions', [SearchApiController::class, 'suggestions']);
+
+    // Categories
+    Route::get('/categories', [CategoryApiController::class, 'index']);
+    Route::get('/categories/{id}', [CategoryApiController::class, 'show']);
+    Route::get('/categories/{id}/listings', [CategoryApiController::class, 'listings']);
+
+    // Locations
+    Route::get('/locations', [LocationApiController::class, 'index']);
+    Route::get('/locations/{id}', [LocationApiController::class, 'show']);
+    Route::get('/locations/{id}/listings', [LocationApiController::class, 'listings']);
 });
 
 // Protected API Routes
@@ -97,4 +115,19 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Wallet & Points
     Route::get('/wallet', [ProfileApiController::class, 'wallet']);
     Route::get('/points', [ProfileApiController::class, 'points']);
+    Route::post('/points/purchase', [ProfileApiController::class, 'purchasePoints']);
+    Route::post('/points/redeem', [ProfileApiController::class, 'redeemPoints']);
+
+    // Reviews
+    Route::post('/reviews', [ProfileApiController::class, 'addReview']);
+    Route::put('/reviews/{id}', [ProfileApiController::class, 'updateReview']);
+    Route::delete('/reviews/{id}', [ProfileApiController::class, 'deleteReview']);
+
+    // Enquiries
+    Route::post('/enquiries', [ProfileApiController::class, 'sendEnquiry']);
+    Route::get('/my-enquiries', [ProfileApiController::class, 'myEnquiries']);
+
+    // Media uploads
+    Route::post('/media/upload', [ProfileApiController::class, 'uploadMedia']);
+    Route::delete('/media/{id}', [ProfileApiController::class, 'deleteMedia']);
 });
