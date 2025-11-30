@@ -49,7 +49,11 @@ class ReviewController extends Controller
     public function approve($id)
     {
         $review = Review::findOrFail($id);
-        $review->update(['is_approved' => true]);
+        $review->update(['is_approved' => true, 'status' => 'approved']);
+
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Review approved successfully!']);
+        }
 
         return back()->with('success', 'Review approved successfully!');
     }
@@ -57,7 +61,11 @@ class ReviewController extends Controller
     public function reject($id)
     {
         $review = Review::findOrFail($id);
-        $review->update(['is_approved' => false]);
+        $review->update(['is_approved' => false, 'status' => 'rejected']);
+
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Review rejected!']);
+        }
 
         return back()->with('success', 'Review rejected!');
     }
@@ -66,6 +74,10 @@ class ReviewController extends Controller
     {
         $review = Review::findOrFail($id);
         $review->delete();
+
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Review deleted successfully!']);
+        }
 
         return redirect()->route('admin.reviews.index')
             ->with('success', 'Review deleted successfully!');
