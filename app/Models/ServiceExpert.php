@@ -40,6 +40,15 @@ class ServiceExpert extends Model
         'is_featured',
         'is_active',
         'status',
+        'working_hours',
+        'languages_spoken',
+        'insurance_details',
+        'hourly_rate',
+        'minimum_charge',
+        'offers_emergency_service',
+        'response_time_hours',
+        'completion_rate',
+        'total_bookings',
     ];
 
     protected $casts = [
@@ -47,11 +56,15 @@ class ServiceExpert extends Model
         'service_areas' => 'array',
         'certifications' => 'array',
         'portfolio_images' => 'array',
+        'working_hours' => 'array',
         'average_rating' => 'decimal:2',
+        'hourly_rate' => 'decimal:2',
+        'minimum_charge' => 'decimal:2',
         'is_verified' => 'boolean',
         'is_available' => 'boolean',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
+        'offers_emergency_service' => 'boolean',
     ];
 
     protected $slugSourceColumn = 'business_name';
@@ -87,6 +100,14 @@ class ServiceExpert extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(ServiceBooking::class);
+    }
+
+    /**
+     * Portfolio items relationship.
+     */
+    public function portfolioItems(): HasMany
+    {
+        return $this->hasMany(PortfolioItem::class);
     }
 
     /**
