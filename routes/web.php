@@ -91,6 +91,14 @@ Route::prefix('news')->name('news.')->group(function () {
     Route::get('/{slug}', [\App\Http\Controllers\NewsController::class, 'show'])->name('show');
 });
 
+// Places - Public
+Route::prefix('places')->name('places.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\PlaceController::class, 'index'])->name('index');
+    Route::get('/category/{category}', [\App\Http\Controllers\PlaceController::class, 'category'])->name('category');
+    Route::get('/location/{location}', [\App\Http\Controllers\PlaceController::class, 'location'])->name('location');
+    Route::get('/{slug}', [\App\Http\Controllers\PlaceController::class, 'show'])->name('show');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated User Routes
@@ -327,6 +335,20 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::post('/{news}/reject', [\App\Http\Controllers\Admin\NewsController::class, 'reject'])->name('reject');
         Route::post('/{news}/toggle-breaking', [\App\Http\Controllers\Admin\NewsController::class, 'toggleBreaking'])->name('toggle-breaking');
         Route::post('/{news}/toggle-featured', [\App\Http\Controllers\Admin\NewsController::class, 'toggleFeatured'])->name('toggle-featured');
+    });
+
+    // Places Management
+    Route::prefix('places')->name('places.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PlaceController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\PlaceController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\PlaceController::class, 'store'])->name('store');
+        Route::get('/{place}', [\App\Http\Controllers\Admin\PlaceController::class, 'show'])->name('show');
+        Route::get('/{place}/edit', [\App\Http\Controllers\Admin\PlaceController::class, 'edit'])->name('edit');
+        Route::patch('/{place}', [\App\Http\Controllers\Admin\PlaceController::class, 'update'])->name('update');
+        Route::delete('/{place}', [\App\Http\Controllers\Admin\PlaceController::class, 'destroy'])->name('destroy');
+        Route::post('/{place}/toggle-featured', [\App\Http\Controllers\Admin\PlaceController::class, 'toggleFeatured'])->name('toggle-featured');
+        Route::post('/{place}/toggle-popular', [\App\Http\Controllers\Admin\PlaceController::class, 'togglePopular'])->name('toggle-popular');
+        Route::delete('/{place}/remove-image', [\App\Http\Controllers\Admin\PlaceController::class, 'removeImage'])->name('remove-image');
     });
 
     // Settings Management
