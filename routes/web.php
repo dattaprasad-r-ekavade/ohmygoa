@@ -351,6 +351,20 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::delete('/{place}/remove-image', [\App\Http\Controllers\Admin\PlaceController::class, 'removeImage'])->name('remove-image');
     });
 
+    // Classifieds Management
+    Route::prefix('classifieds')->name('classifieds.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ClassifiedController::class, 'index'])->name('index');
+        Route::get('/statistics', [\App\Http\Controllers\Admin\ClassifiedController::class, 'statistics'])->name('statistics');
+        Route::get('/{classified}', [\App\Http\Controllers\Admin\ClassifiedController::class, 'show'])->name('show');
+        Route::patch('/{classified}', [\App\Http\Controllers\Admin\ClassifiedController::class, 'update'])->name('update');
+        Route::delete('/{classified}', [\App\Http\Controllers\Admin\ClassifiedController::class, 'destroy'])->name('destroy');
+        Route::post('/{classified}/toggle-featured', [\App\Http\Controllers\Admin\ClassifiedController::class, 'toggleFeatured'])->name('toggle-featured');
+        Route::post('/{classified}/toggle-urgent', [\App\Http\Controllers\Admin\ClassifiedController::class, 'toggleUrgent'])->name('toggle-urgent');
+        Route::post('/{classified}/extend', [\App\Http\Controllers\Admin\ClassifiedController::class, 'extend'])->name('extend');
+        Route::post('/{classified}/upgrade', [\App\Http\Controllers\Admin\ClassifiedController::class, 'upgrade'])->name('upgrade');
+        Route::post('/bulk-action', [\App\Http\Controllers\Admin\ClassifiedController::class, 'bulkAction'])->name('bulk-action');
+    });
+
     // Settings Management
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('index');
