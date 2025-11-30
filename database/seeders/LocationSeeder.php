@@ -15,37 +15,41 @@ class LocationSeeder extends Seeder
         // Country
         $india = Location::create([
             'name' => 'India',
+            'slug' => 'india',
             'type' => 'country',
             'parent_id' => null,
-            'status' => 'active',
+            'is_active' => true,
         ]);
 
         // State
         $goa = Location::create([
             'name' => 'Goa',
+            'slug' => 'goa',
             'type' => 'state',
             'parent_id' => $india->id,
-            'status' => 'active',
+            'is_active' => true,
         ]);
 
         // Districts
         $northGoa = Location::create([
             'name' => 'North Goa',
+            'slug' => 'north-goa',
             'type' => 'district',
             'parent_id' => $goa->id,
-            'status' => 'active',
+            'is_active' => true,
         ]);
 
         $southGoa = Location::create([
             'name' => 'South Goa',
+            'slug' => 'south-goa',
             'type' => 'district',
             'parent_id' => $goa->id,
-            'status' => 'active',
+            'is_active' => true,
         ]);
 
         // North Goa Cities/Towns
         $northGoaCities = [
-            'Panaji', 'Mapusa', 'Bicholim', 'Pernem', 'Ponda', 
+            'Panaji', 'Mapusa', 'Bicholim', 'Pernem', 
             'Valpoi', 'Tivim', 'Saligao', 'Anjuna', 'Arambol',
             'Assagao', 'Baga', 'Calangute', 'Candolim', 'Morjim',
             'Siolim', 'Vagator', 'Aldona', 'Reis Magos', 'Nerul'
@@ -54,47 +58,42 @@ class LocationSeeder extends Seeder
         foreach ($northGoaCities as $city) {
             Location::create([
                 'name' => $city,
+                'slug' => strtolower(str_replace(' ', '-', $city)),
                 'type' => 'city',
                 'parent_id' => $northGoa->id,
-                'status' => 'active',
+                'is_active' => true,
             ]);
         }
 
-        // South Goa Cities/Towns
+        // South Goa Cities/Towns (removed Ponda - duplicate, Benaulim/Colva/Cavelossim/Varca/Betalbatim/Majorda/Palolem/Agonda as they're beaches in GoaLocationsSeeder)
         $southGoaCities = [
-            'Margao', 'Vasco da Gama', 'Ponda', 'Quepem', 'Curchorem',
-            'Sancoale', 'Cortalim', 'Benaulim', 'Colva', 'Cavelossim',
-            'Varca', 'Betalbatim', 'Majorda', 'Palolem', 'Agonda',
-            'Canacona', 'Cuncolim', 'Loutolim', 'Chandor', 'Raia'
+            'Margao', 'Vasco da Gama', 'Quepem', 'Curchorem',
+            'Sancoale', 'Cortalim', 'Canacona', 'Cuncolim', 'Loutolim', 'Chandor', 'Raia'
         ];
 
         foreach ($southGoaCities as $city) {
             Location::create([
                 'name' => $city,
+                'slug' => strtolower(str_replace(' ', '-', $city)),
                 'type' => 'city',
                 'parent_id' => $southGoa->id,
-                'status' => 'active',
+                'is_active' => true,
             ]);
         }
 
-        // Popular Beaches (as locations for attractions)
-        $beaches = [
-            'Anjuna Beach', 'Baga Beach', 'Calangute Beach', 'Candolim Beach',
-            'Vagator Beach', 'Morjim Beach', 'Arambol Beach', 'Palolem Beach',
-            'Agonda Beach', 'Colva Beach', 'Benaulim Beach', 'Cavelossim Beach',
-            'Varca Beach', 'Majorda Beach', 'Miramar Beach', 'Dona Paula Beach'
+        // Additional locations
+        $additionalLocations = [
+            'Miramar Beach' => $northGoa->id,
+            'Dona Paula Beach' => $northGoa->id,
         ];
 
-        foreach ($beaches as $beach) {
-            $district = (str_contains($beach, ['Palolem', 'Agonda', 'Colva', 'Benaulim', 'Cavelossim', 'Varca', 'Majorda'])) 
-                ? $southGoa->id 
-                : $northGoa->id;
-
+        foreach ($additionalLocations as $location => $parentId) {
             Location::create([
-                'name' => $beach,
+                'name' => $location,
+                'slug' => strtolower(str_replace(' ', '-', $location)),
                 'type' => 'area',
-                'parent_id' => $district,
-                'status' => 'active',
+                'parent_id' => $parentId,
+                'is_active' => true,
             ]);
         }
     }

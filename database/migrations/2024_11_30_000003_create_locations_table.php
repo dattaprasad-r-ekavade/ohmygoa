@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->enum('type', ['state', 'city', 'area'])->default('city');
+            $table->enum('type', ['country', 'state', 'district', 'city', 'area'])->default('city');
             $table->foreignId('parent_id')->nullable()->constrained('locations')->onDelete('cascade');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
-            $table->integer('position')->default(0);
+            $table->integer('display_order')->default(0);
             $table->boolean('is_popular')->default(false);
             $table->boolean('is_active')->default(true);
             $table->timestamps();

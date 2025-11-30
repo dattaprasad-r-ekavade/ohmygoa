@@ -34,8 +34,8 @@ class CategorySeeder extends Seeder
                 'slug' => \Str::slug($parent),
                 'type' => 'business',
                 'parent_id' => null,
-                'status' => 'active',
-                'order_number' => 0,
+                'is_active' => true,
+                'display_order' => 0,
             ]);
 
             foreach ($children as $index => $child) {
@@ -44,8 +44,8 @@ class CategorySeeder extends Seeder
                     'slug' => \Str::slug($child),
                     'type' => 'business',
                     'parent_id' => $parentCategory->id,
-                    'status' => 'active',
-                    'order_number' => $index + 1,
+                    'is_active' => true,
+                    'display_order' => $index + 1,
                 ]);
             }
         }
@@ -66,8 +66,8 @@ class CategorySeeder extends Seeder
                 'slug' => \Str::slug($parent),
                 'type' => 'event',
                 'parent_id' => null,
-                'status' => 'active',
-                'order_number' => 0,
+                'is_active' => true,
+                'display_order' => 0,
             ]);
 
             foreach ($children as $index => $child) {
@@ -76,8 +76,8 @@ class CategorySeeder extends Seeder
                     'slug' => \Str::slug($child),
                     'type' => 'event',
                     'parent_id' => $parentCategory->id,
-                    'status' => 'active',
-                    'order_number' => $index + 1,
+                    'is_active' => true,
+                    'display_order' => $index + 1,
                 ]);
             }
         }
@@ -99,8 +99,8 @@ class CategorySeeder extends Seeder
                 'slug' => \Str::slug($parent),
                 'type' => 'job',
                 'parent_id' => null,
-                'status' => 'active',
-                'order_number' => 0,
+                'is_active' => true,
+                'display_order' => 0,
             ]);
 
             foreach ($children as $index => $child) {
@@ -109,8 +109,8 @@ class CategorySeeder extends Seeder
                     'slug' => \Str::slug($child),
                     'type' => 'job',
                     'parent_id' => $parentCategory->id,
-                    'status' => 'active',
-                    'order_number' => $index + 1,
+                    'is_active' => true,
+                    'display_order' => $index + 1,
                 ]);
             }
         }
@@ -131,8 +131,8 @@ class CategorySeeder extends Seeder
                 'slug' => \Str::slug($parent),
                 'type' => 'product',
                 'parent_id' => null,
-                'status' => 'active',
-                'order_number' => 0,
+                'is_active' => true,
+                'display_order' => 0,
             ]);
 
             foreach ($children as $index => $child) {
@@ -141,8 +141,8 @@ class CategorySeeder extends Seeder
                     'slug' => \Str::slug($child),
                     'type' => 'product',
                     'parent_id' => $parentCategory->id,
-                    'status' => 'active',
-                    'order_number' => $index + 1,
+                    'is_active' => true,
+                    'display_order' => $index + 1,
                 ]);
             }
         }
@@ -162,8 +162,8 @@ class CategorySeeder extends Seeder
                 'slug' => \Str::slug($parent),
                 'type' => 'service',
                 'parent_id' => null,
-                'status' => 'active',
-                'order_number' => 0,
+                'is_active' => true,
+                'display_order' => 0,
             ]);
 
             foreach ($children as $index => $child) {
@@ -172,8 +172,8 @@ class CategorySeeder extends Seeder
                     'slug' => \Str::slug($child),
                     'type' => 'service',
                     'parent_id' => $parentCategory->id,
-                    'status' => 'active',
-                    'order_number' => $index + 1,
+                    'is_active' => true,
+                    'display_order' => $index + 1,
                 ]);
             }
         }

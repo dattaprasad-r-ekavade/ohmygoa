@@ -18,8 +18,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('icon')->nullable();
             $table->string('image')->nullable();
-            $table->enum('type', ['listing', 'event', 'job', 'product', 'place', 'classified', 'news'])->default('listing');
-            $table->integer('position')->default(0);
+            $table->enum('type', ['business', 'listing', 'event', 'job', 'product', 'place', 'classified', 'news', 'service'])->default('business');
+            $table->integer('display_order')->default(0);
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_active')->default(true);
             $table->foreignId('parent_id')->nullable()->constrained('categories')->onDelete('cascade');
