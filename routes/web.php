@@ -42,6 +42,21 @@ Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/search/results', [SearchController::class, 'search'])->name('search.results');
 Route::get('/search/autocomplete', [SearchController::class, 'autocomplete'])->name('search.autocomplete');
 
+// Q&A / Community Forum
+Route::prefix('qa')->name('qa.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\QaController::class, 'index'])->name('index');
+    Route::get('/create', [\App\Http\Controllers\QaController::class, 'create'])->name('create')->middleware('auth');
+    Route::post('/', [\App\Http\Controllers\QaController::class, 'store'])->name('store')->middleware('auth');
+    Route::get('/{question}', [\App\Http\Controllers\QaController::class, 'show'])->name('show');
+    Route::post('/{question}/answer', [\App\Http\Controllers\QaController::class, 'answer'])->name('answer')->middleware('auth');
+    Route::post('/{question}/answers/{answer}/accept', [\App\Http\Controllers\QaController::class, 'acceptAnswer'])->name('answer.accept')->middleware('auth');
+    Route::post('/{type}/{id}/vote', [\App\Http\Controllers\QaController::class, 'vote'])->name('vote')->middleware('auth');
+});
+
+// Enquiries
+Route::post('/enquiries', [\App\Http\Controllers\EnquiryController::class, 'store'])->name('enquiries.store');
+Route::get('/my-enquiries', [\App\Http\Controllers\EnquiryController::class, 'myEnquiries'])->name('enquiries.my')->middleware('auth');
+
 // Business Listings - Public
 Route::prefix('listings')->name('listings.')->group(function () {
     Route::get('/', [BusinessListingController::class, 'index'])->name('index');
@@ -259,20 +274,38 @@ Route::middleware(['auth', 'verified', 'role:business'])->prefix('business')->na
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Admin Dashboard
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/analytics', [\App\Http\Controllers\Admin\DashboardController::class, 'analytics'])->name('analytics');
 
     // User Management
     Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/', [UserManagementController::class, 'index'])->name('index');
-        Route::get('/create', [UserManagementController::class, 'create'])->name('create');
-        Route::post('/', [UserManagementController::class, 'store'])->name('store');
-        Route::get('/{user}', [UserManagementController::class, 'show'])->name('show');
-        Route::get('/{user}/edit', [UserManagementController::class, 'edit'])->name('edit');
-        Route::patch('/{user}', [UserManagementController::class, 'update'])->name('update');
-        Route::delete('/{user}', [UserManagementController::class, 'destroy'])->name('destroy');
-        Route::post('/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('toggle-status');
-        Route::post('/{user}/toggle-verification', [UserManagementController::class, 'toggleVerification'])->name('toggle-verification');
-        Route::post('/bulk-action', [UserManagementController::class, 'bulkAction'])->name('bulk-action');
+        Route::get('/', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('index');
+        Route::get('/statistics', [\App\Http\Controllers\Admin\UserController::class, 'statistics'])->name('statistics');
+        Route::get('/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('store');
+        Route::get('/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('show');
+        Route::get('/{user}/edit', [\App\Http\Controllers\Admin\UserController::class, 'edit'])->name('edit');
+        Route::patch('/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('destroy');
+        Route::post('/{user}/restore', [\App\Http\Controllers\Admin\UserController::class, 'restore'])->name('restore');
+        Route::delete('/{user}/force-delete', [\App\Http\Controllers\Admin\UserController::class, 'forceDelete'])->name('force-delete');
+        Route::post('/{user}/verify-email', [\App\Http\Controllers\Admin\UserController::class, 'verifyEmail'])->name('verify-email');
+        Route::post('/{user}/change-role', [\App\Http\Controllers\Admin\UserController::class, 'changeRole'])->name('change-role');
+        Route::post('/{user}/suspend', [\App\Http\Controllers\Admin\UserController::class, 'suspendUser'])->name('suspend');
+        Route::post('/{user}/unsuspend', [\App\Http\Controllers\Admin\UserController::class, 'unsuspendUser'])->name('unsuspend');
+        Route::post('/bulk-action', [\App\Http\Controllers\Admin\UserController::class, 'bulkAction'])->name('bulk-action');
+    });
+
+    // Enquiry Management
+    Route::prefix('enquiries')->name('enquiries.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\EnquiryController::class, 'index'])->name('index');
+        Route::get('/statistics', [\App\Http\Controllers\Admin\EnquiryController::class, 'statistics'])->name('statistics');
+        Route::get('/{enquiry}', [\App\Http\Controllers\Admin\EnquiryController::class, 'show'])->name('show');
+        Route::patch('/{enquiry}', [\App\Http\Controllers\Admin\EnquiryController::class, 'update'])->name('update');
+        Route::post('/{enquiry}/mark-replied', [\App\Http\Controllers\Admin\EnquiryController::class, 'markAsReplied'])->name('mark-replied');
+        Route::post('/{enquiry}/close', [\App\Http\Controllers\Admin\EnquiryController::class, 'close'])->name('close');
+        Route::delete('/{enquiry}', [\App\Http\Controllers\Admin\EnquiryController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-action', [\App\Http\Controllers\Admin\EnquiryController::class, 'bulkAction'])->name('bulk-action');
     });
 
     // Content Approval
