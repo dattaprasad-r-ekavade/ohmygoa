@@ -14,9 +14,7 @@ return new class extends Migration
         Schema::table('service_experts', function (Blueprint $table) {
             $table->json('working_hours')->nullable()->after('is_available');
             $table->string('languages_spoken')->nullable()->after('working_hours');
-            $table->integer('years_experience')->nullable()->after('languages_spoken');
-            $table->json('certifications')->nullable()->after('years_experience');
-            $table->string('insurance_details')->nullable()->after('certifications');
+            $table->string('insurance_details')->nullable()->after('languages_spoken');
             $table->decimal('hourly_rate', 8, 2)->nullable()->after('insurance_details');
             $table->decimal('minimum_charge', 8, 2)->nullable()->after('hourly_rate');
             $table->boolean('offers_emergency_service')->default(false)->after('minimum_charge');
@@ -35,8 +33,6 @@ return new class extends Migration
             $table->dropColumn([
                 'working_hours',
                 'languages_spoken',
-                'years_experience',
-                'certifications',
                 'insurance_details',
                 'hourly_rate',
                 'minimum_charge',
