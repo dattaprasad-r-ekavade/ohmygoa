@@ -84,6 +84,13 @@ Route::prefix('service-experts')->name('service-experts.')->group(function () {
     Route::get('/{slug}', [ServiceExpertController::class, 'show'])->name('show');
 });
 
+// News - Public
+Route::prefix('news')->name('news.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\NewsController::class, 'index'])->name('index');
+    Route::get('/category/{category}', [\App\Http\Controllers\NewsController::class, 'category'])->name('category');
+    Route::get('/{slug}', [\App\Http\Controllers\NewsController::class, 'show'])->name('show');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated User Routes
@@ -223,6 +230,16 @@ Route::middleware(['auth', 'verified', 'role:business'])->prefix('business')->na
         Route::delete('/{serviceExpert}', [ServiceExpertController::class, 'destroy'])->name('destroy');
         Route::post('/{serviceExpert}/toggle-availability', [ServiceExpertController::class, 'toggleAvailability'])->name('toggle-availability');
     });
+
+    // News Management
+    Route::prefix('news')->name('news.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Business\NewsController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Business\NewsController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Business\NewsController::class, 'store'])->name('store');
+        Route::get('/{news}/edit', [\App\Http\Controllers\Business\NewsController::class, 'edit'])->name('edit');
+        Route::patch('/{news}', [\App\Http\Controllers\Business\NewsController::class, 'update'])->name('update');
+        Route::delete('/{news}', [\App\Http\Controllers\Business\NewsController::class, 'destroy'])->name('destroy');
+    });
 });
 
 /*
@@ -297,6 +314,19 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::post('/{location}/toggle-popular', [AdminLocationController::class, 'togglePopular'])->name('toggle-popular');
         Route::post('/reorder', [AdminLocationController::class, 'reorder'])->name('reorder');
         Route::post('/import', [AdminLocationController::class, 'import'])->name('import');
+    });
+
+    // News Management
+    Route::prefix('news')->name('news.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\NewsController::class, 'index'])->name('index');
+        Route::get('/{news}', [\App\Http\Controllers\Admin\NewsController::class, 'show'])->name('show');
+        Route::get('/{news}/edit', [\App\Http\Controllers\Admin\NewsController::class, 'edit'])->name('edit');
+        Route::patch('/{news}', [\App\Http\Controllers\Admin\NewsController::class, 'update'])->name('update');
+        Route::delete('/{news}', [\App\Http\Controllers\Admin\NewsController::class, 'destroy'])->name('destroy');
+        Route::post('/{news}/approve', [\App\Http\Controllers\Admin\NewsController::class, 'approve'])->name('approve');
+        Route::post('/{news}/reject', [\App\Http\Controllers\Admin\NewsController::class, 'reject'])->name('reject');
+        Route::post('/{news}/toggle-breaking', [\App\Http\Controllers\Admin\NewsController::class, 'toggleBreaking'])->name('toggle-breaking');
+        Route::post('/{news}/toggle-featured', [\App\Http\Controllers\Admin\NewsController::class, 'toggleFeatured'])->name('toggle-featured');
     });
 
     // Settings Management
