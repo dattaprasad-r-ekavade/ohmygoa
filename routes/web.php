@@ -57,6 +57,25 @@ Route::prefix('qa')->name('qa.')->group(function () {
 Route::post('/enquiries', [\App\Http\Controllers\EnquiryController::class, 'store'])->name('enquiries.store');
 Route::get('/my-enquiries', [\App\Http\Controllers\EnquiryController::class, 'myEnquiries'])->name('enquiries.my')->middleware('auth');
 
+// Subscriptions
+Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\SubscriptionController::class, 'index'])->name('index');
+    Route::post('/subscribe', [\App\Http\Controllers\SubscriptionController::class, 'subscribe'])->name('subscribe')->middleware('auth');
+    Route::post('/cancel', [\App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('cancel')->middleware('auth');
+    Route::post('/{subscription}/renew', [\App\Http\Controllers\SubscriptionController::class, 'renew'])->name('renew')->middleware('auth');
+    Route::post('/upgrade', [\App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('upgrade')->middleware('auth');
+});
+
+// Reviews
+Route::prefix('reviews')->name('reviews.')->middleware('auth')->group(function () {
+    Route::post('/', [\App\Http\Controllers\ReviewController::class, 'store'])->name('store');
+    Route::patch('/{review}', [\App\Http\Controllers\ReviewController::class, 'update'])->name('update');
+    Route::delete('/{review}', [\App\Http\Controllers\ReviewController::class, 'destroy'])->name('destroy');
+    Route::post('/{review}/helpful', [\App\Http\Controllers\ReviewController::class, 'markHelpful'])->name('helpful');
+    Route::post('/{review}/not-helpful', [\App\Http\Controllers\ReviewController::class, 'markNotHelpful'])->name('not-helpful');
+    Route::post('/{review}/reply', [\App\Http\Controllers\ReviewController::class, 'reply'])->name('reply');
+});
+
 // Business Listings - Public
 Route::prefix('listings')->name('listings.')->group(function () {
     Route::get('/', [BusinessListingController::class, 'index'])->name('index');
@@ -396,6 +415,64 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::post('/{classified}/extend', [\App\Http\Controllers\Admin\ClassifiedController::class, 'extend'])->name('extend');
         Route::post('/{classified}/upgrade', [\App\Http\Controllers\Admin\ClassifiedController::class, 'upgrade'])->name('upgrade');
         Route::post('/bulk-action', [\App\Http\Controllers\Admin\ClassifiedController::class, 'bulkAction'])->name('bulk-action');
+    });
+
+    // Content Management
+    Route::prefix('content')->name('content.')->group(function () {
+        Route::get('/listings', [\App\Http\Controllers\Admin\ContentController::class, 'listings'])->name('listings');
+        Route::patch('/listings/{listing}', [\App\Http\Controllers\Admin\ContentController::class, 'updateListing'])->name('listings.update');
+        Route::get('/jobs', [\App\Http\Controllers\Admin\ContentController::class, 'jobs'])->name('jobs');
+        Route::patch('/jobs/{job}', [\App\Http\Controllers\Admin\ContentController::class, 'updateJob'])->name('jobs.update');
+        Route::get('/products', [\App\Http\Controllers\Admin\ContentController::class, 'products'])->name('products');
+        Route::patch('/products/{product}', [\App\Http\Controllers\Admin\ContentController::class, 'updateProduct'])->name('products.update');
+        Route::get('/events', [\App\Http\Controllers\Admin\ContentController::class, 'events'])->name('events');
+        Route::patch('/events/{event}', [\App\Http\Controllers\Admin\ContentController::class, 'updateEvent'])->name('events.update');
+        Route::get('/coupons', [\App\Http\Controllers\Admin\ContentController::class, 'coupons'])->name('coupons');
+        Route::patch('/coupons/{coupon}', [\App\Http\Controllers\Admin\ContentController::class, 'updateCoupon'])->name('coupons.update');
+        Route::get('/blogs', [\App\Http\Controllers\Admin\ContentController::class, 'blogs'])->name('blogs');
+        Route::patch('/blogs/{blog}', [\App\Http\Controllers\Admin\ContentController::class, 'updateBlog'])->name('blogs.update');
+        Route::post('/bulk-action', [\App\Http\Controllers\Admin\ContentController::class, 'bulkAction'])->name('bulk-action');
+    });
+
+    // Financial Management
+    Route::prefix('financial')->name('financial.')->group(function () {
+        Route::get('/payments', [\App\Http\Controllers\Admin\FinancialController::class, 'payments'])->name('payments');
+        Route::get('/payments/{payment}', [\App\Http\Controllers\Admin\FinancialController::class, 'paymentDetails'])->name('payments.show');
+        Route::post('/payments/{payment}/refund', [\App\Http\Controllers\Admin\FinancialController::class, 'refundPayment'])->name('payments.refund');
+        Route::get('/commissions', [\App\Http\Controllers\Admin\FinancialController::class, 'commissions'])->name('commissions');
+        Route::get('/payouts', [\App\Http\Controllers\Admin\FinancialController::class, 'payouts'])->name('payouts');
+        Route::post('/payouts/{payout}/approve', [\App\Http\Controllers\Admin\FinancialController::class, 'approvePayout'])->name('payouts.approve');
+        Route::post('/payouts/{payout}/mark-paid', [\App\Http\Controllers\Admin\FinancialController::class, 'markPayoutAsPaid'])->name('payouts.mark-paid');
+        Route::post('/payouts/{payout}/reject', [\App\Http\Controllers\Admin\FinancialController::class, 'rejectPayout'])->name('payouts.reject');
+        Route::get('/subscriptions', [\App\Http\Controllers\Admin\FinancialController::class, 'subscriptions'])->name('subscriptions');
+        Route::post('/subscriptions/{subscription}/extend', [\App\Http\Controllers\Admin\FinancialController::class, 'extendSubscription'])->name('subscriptions.extend');
+        Route::post('/subscriptions/{subscription}/cancel', [\App\Http\Controllers\Admin\FinancialController::class, 'cancelSubscription'])->name('subscriptions.cancel');
+        Route::get('/invoices', [\App\Http\Controllers\Admin\FinancialController::class, 'invoices'])->name('invoices');
+        Route::get('/revenue-analytics', [\App\Http\Controllers\Admin\FinancialController::class, 'revenueAnalytics'])->name('revenue-analytics');
+    });
+
+    // Reports & Analytics
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+        Route::get('/user-activity', [\App\Http\Controllers\Admin\ReportController::class, 'userActivity'])->name('user-activity');
+        Route::get('/content-performance', [\App\Http\Controllers\Admin\ReportController::class, 'contentPerformance'])->name('content-performance');
+        Route::get('/financial', [\App\Http\Controllers\Admin\ReportController::class, 'financial'])->name('financial');
+        Route::get('/search-analytics', [\App\Http\Controllers\Admin\ReportController::class, 'searchAnalytics'])->name('search-analytics');
+        Route::get('/location-performance', [\App\Http\Controllers\Admin\ReportController::class, 'locationPerformance'])->name('location-performance');
+        Route::get('/category-performance', [\App\Http\Controllers\Admin\ReportController::class, 'categoryPerformance'])->name('category-performance');
+        Route::get('/enquiries', [\App\Http\Controllers\Admin\ReportController::class, 'enquiries'])->name('enquiries');
+        Route::post('/export', [\App\Http\Controllers\Admin\ReportController::class, 'export'])->name('export');
+    });
+
+    // Reviews Management
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('index');
+        Route::get('/statistics', [\App\Http\Controllers\Admin\ReviewController::class, 'statistics'])->name('statistics');
+        Route::get('/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'show'])->name('show');
+        Route::post('/{review}/approve', [\App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('approve');
+        Route::post('/{review}/reject', [\App\Http\Controllers\Admin\ReviewController::class, 'reject'])->name('reject');
+        Route::delete('/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-action', [\App\Http\Controllers\Admin\ReviewController::class, 'bulkAction'])->name('bulk-action');
     });
 
     // Settings Management
