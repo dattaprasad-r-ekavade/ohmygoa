@@ -19,6 +19,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ServiceExpertController;
+use App\Http\Controllers\SeoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,6 +27,17 @@ use Illuminate\Support\Facades\Route;
 | Public Routes
 |--------------------------------------------------------------------------
 */
+
+// SEO Routes
+Route::get('/sitemap.xml', [SeoController::class, 'sitemapIndex'])->name('sitemap.index');
+Route::get('/sitemap-listings.xml', [SeoController::class, 'sitemapListings'])->name('sitemap.listings');
+Route::get('/sitemap-events.xml', [SeoController::class, 'sitemapEvents'])->name('sitemap.events');
+Route::get('/sitemap-jobs.xml', [SeoController::class, 'sitemapJobs'])->name('sitemap.jobs');
+Route::get('/sitemap-products.xml', [SeoController::class, 'sitemapProducts'])->name('sitemap.products');
+Route::get('/sitemap-categories.xml', [SeoController::class, 'sitemapCategories'])->name('sitemap.categories');
+Route::get('/sitemap-locations.xml', [SeoController::class, 'sitemapLocations'])->name('sitemap.locations');
+Route::get('/sitemap-static.xml', [SeoController::class, 'sitemapStatic'])->name('sitemap.static');
+Route::get('/robots.txt', [SeoController::class, 'robotsTxt'])->name('robots');
 
 // Homepage
 Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
