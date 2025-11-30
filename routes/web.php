@@ -28,9 +28,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Homepage
-Route::get('/', function () {
-    return view('index');
-})->name('home');
+Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 // Static Pages
 Route::view('/about', 'about')->name('about');
