@@ -28,7 +28,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Update last login timestamp
+        $request->user()->updateLastLogin();
+
+        // Redirect based on role
+        return $this->redirectBasedOnRole($request->user());
     }
 
     /**
@@ -43,5 +47,21 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * Redirect user based on their role
+     */
+    protected function redirectBasedOnRole($user): RedirectResponse
+    {
+        if ($user->isAdmin()) {
+            return redirect()->intended(route('admin.dashboard', absolute: false));
+        }
+
+        if ($user->isBusiness()) {
+            return redirect()->intended(route('business.dashboard', absolute: false));
+        }
+
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 }
