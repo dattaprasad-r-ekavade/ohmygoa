@@ -40,8 +40,20 @@ Route::view('/terms-of-use', 'terms-of-use')->name('terms');
 
 // Search
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
-Route::get('/search/results', [SearchController::class, 'search'])->name('search.results');
 Route::get('/search/autocomplete', [SearchController::class, 'autocomplete'])->name('search.autocomplete');
+Route::get('/search/popular', [SearchController::class, 'popularSearches'])->name('search.popular');
+
+// Authenticated search features
+Route::middleware('auth')->group(function () {
+    Route::post('/search/save', [SearchController::class, 'saveSearch'])->name('search.save');
+    Route::get('/search/saved', [SearchController::class, 'savedSearches'])->name('search.saved');
+    Route::delete('/search/saved/{id}', [SearchController::class, 'deleteSavedSearch'])->name('search.delete');
+});
+
+// Admin search analytics
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/search-analytics', [SearchController::class, 'analytics'])->name('search.analytics');
+});
 
 // Q&A / Community Forum
 Route::prefix('qa')->name('qa.')->group(function () {

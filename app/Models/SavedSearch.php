@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class SavedSearch extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'name',
+        'query',
+        'filters',
+    ];
+
+    protected $casts = [
+        'filters' => 'array',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function getSearchUrlAttribute()
+    {
+        $params = array_merge(
+            ['q' => $this->query],
+            $this->filters ?? []
+        );
+
+        return route('search.index', $params);
+    }
+}

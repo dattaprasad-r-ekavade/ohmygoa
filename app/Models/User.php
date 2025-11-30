@@ -131,6 +131,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Saved searches relationship
+     */
+    public function savedSearches(): HasMany
+    {
+        return $this->hasMany(SavedSearch::class);
+    }
+
+    /**
+     * Enquiries relationship
+     */
+    public function enquiries(): HasMany
+    {
+        return $this->hasMany(Enquiry::class);
+    }
+
+    /**
      * Update last login timestamp
      */
     public function updateLastLogin(): void
