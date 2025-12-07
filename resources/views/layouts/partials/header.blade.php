@@ -15,7 +15,7 @@
                         <!--END MOBILE MENU-->
                         
                         <div class="top-ser">
-                            <form name="filter_form" id="filter_form" class="filter_form" action="{{ route('search.results') }}" method="GET">
+                            <form name="filter_form" id="filter_form" class="filter_form" action="{{ route('search.index') }}" method="GET">
                                 <ul>
                                     <li class="sr-sea">
                                         <input type="text" name="q" autocomplete="off" id="top-select-search" placeholder="What are you looking for?" value="{{ request('q') }}">

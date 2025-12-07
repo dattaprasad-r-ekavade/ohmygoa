@@ -20,6 +20,7 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Oswald:700|Source+Sans+Pro:300,400,600,700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
     <!-- CSS -->
     <link rel="stylesheet" href="{{ asset('css/jquery-ui.css') }}">
@@ -36,7 +37,9 @@
         <div id="status">&nbsp;</div>
     </div>
     
-    @include('layouts.partials.header')
+    @section('header')
+        @include('layouts.partials.header')
+    @show
     
     @yield('content')
     
@@ -44,9 +47,15 @@
     
     <!-- Scripts -->
     <script src="{{ asset('js/jquery.min.js') }}"></script>
+    <script src="{{ asset('js/popper.min.js') }}"></script>
+    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/jquery-ui.js') }}"></script>
-    <script src="{{ asset('js/bootstrap.js') }}"></script>
+    <script src="{{ asset('js/select-opt.js') }}"></script>
+    <script src="{{ asset('js/blazy.min.js') }}"></script>
+    <script src="{{ asset('js/slick.js') }}"></script>
     <script src="{{ asset('js/custom.js') }}"></script>
+    <script src="{{ asset('js/jquery.validate.min.js') }}"></script>
+    <script src="{{ asset('js/custom_validation.js') }}"></script>
     
     @stack('scripts')
 </body>

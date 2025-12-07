@@ -49,6 +49,7 @@ Route::view('/how-to', 'how-to')->name('how-to');
 Route::view('/faq', 'faq')->name('faq');
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy');
 Route::view('/terms-of-use', 'terms-of-use')->name('terms');
+Route::view('/feedback', 'feedback')->name('feedback');
 
 // Search
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
