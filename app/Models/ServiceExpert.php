@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Bookmarkable;
 use App\Traits\HasSlug;
+use App\Traits\HasViewCount;
 use App\Traits\Reviewable;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ServiceExpert extends Model
 {
-    use HasFactory, SoftDeletes, HasSlug, Searchable, Reviewable, Bookmarkable;
+    use HasFactory, SoftDeletes, HasSlug, Searchable, Reviewable, Bookmarkable, HasViewCount;
 
     protected $fillable = [
         'user_id',
@@ -25,46 +26,58 @@ class ServiceExpert extends Model
         'description',
         'services_offered',
         'service_areas',
-        'phone',
-        'email',
+        'contact_phone',
+        'contact_email',
+        'address',
         'website',
         'certifications',
-        'years_experience',
+        'skills',
+        'languages_spoken',
+        'working_hours',
+        'insurance_details',
+        'availability',
+        'years_of_experience',
         'profile_image',
         'portfolio_images',
         'average_rating',
         'total_reviews',
         'jobs_completed',
+        'hourly_rate',
+        'minimum_charge',
         'is_verified',
         'is_available',
         'is_featured',
         'is_active',
         'status',
-        'working_hours',
-        'languages_spoken',
-        'insurance_details',
-        'hourly_rate',
-        'minimum_charge',
         'offers_emergency_service',
         'response_time_hours',
         'completion_rate',
         'total_bookings',
+        'views_count',
     ];
 
     protected $casts = [
         'services_offered' => 'array',
         'service_areas' => 'array',
         'certifications' => 'array',
+        'skills' => 'array',
         'portfolio_images' => 'array',
         'working_hours' => 'array',
         'average_rating' => 'decimal:2',
         'hourly_rate' => 'decimal:2',
         'minimum_charge' => 'decimal:2',
+        'completion_rate' => 'decimal:2',
         'is_verified' => 'boolean',
         'is_available' => 'boolean',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
         'offers_emergency_service' => 'boolean',
+        'languages_spoken' => 'array',
+        'years_of_experience' => 'integer',
+        'response_time_hours' => 'integer',
+        'total_bookings' => 'integer',
+        'jobs_completed' => 'integer',
+        'views_count' => 'integer',
     ];
 
     protected $slugSourceColumn = 'business_name';

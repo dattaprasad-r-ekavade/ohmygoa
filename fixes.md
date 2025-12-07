@@ -383,6 +383,54 @@ Use the `mimes:jpg,png,pdf...` validation rule in the request validation for rob
 
 ---
 
+## ❗ Implementation & Feature Gaps Identified
+
+### 18. **SERVICE EXPERT VIEWS MISSING**
+**Severity:** HIGH 🟠  
+**Location:** `routes/web.php`, `resources/views`  
+**Risk Level:** HIGH
+
+#### Problem:
+Multiple routes (public, business, and booking) render Blade views under the `service-experts.*` namespace (e.g., `return view('service-experts.index')`), but the `resources/views` tree does not contain a `service-experts/` directory at all. Any attempt to load these pages results in a view-not-found error, so the entire Service Expert feature is inaccessible.
+
+#### Fix Required:
+Create the missing Blade templates (`index`, `show`, `create`, `edit`, `book`, etc.) or adjust the controllers to point to existing view paths. Add smoke tests to ensure every defined route resolves a view.
+
+### 19. **SERVICE EXPERT SCHEMA/CONTROLLER MISMATCH**
+**Severity:** HIGH 🟠  
+**Location:** `app/Http/Controllers/ServiceExpertController.php`, `database/migrations/2024_11_30_000021_create_service_experts_table.php`  
+**Risk Level:** HIGH
+
+#### Problem:
+The controller validates and writes fields such as `years_of_experience`, `contact_phone`, `contact_email`, `skills`, `address`, and `availability`, but the migration/model define different column names (`years_experience`, `phone`, `email`) or lack the columns entirely (`skills`, `address`, `availability`). Because of this mismatch, mass assignment silently drops user input, filters like `->where('years_of_experience', ...)` fail, and data integrity cannot be guaranteed.
+
+#### Fix Required:
+Align the migration, model `$fillable`, and controller validation so they use identical field names. Either rename the database columns via a migration (e.g., `years_experience` → `years_of_experience`, add `address`, `skills`, etc.) or update the controller to use the existing schema. Add feature tests to cover create/update flows.
+
+### 20. **MISSING VIEW-COUNT TRAIT & INVALID SORTING COLUMNS**
+**Severity:** HIGH 🟠  
+**Location:** `app/Http/Controllers/ServiceExpertController.php`, `app/Models/ServiceExpert.php`  
+**Risk Level:** MEDIUM-HIGH
+
+#### Problem:
+`ServiceExpertController::show()` calls `$expert->incrementViewCount()` and the listing endpoint orders by `views_count` and `years_of_experience`, but the `ServiceExpert` model does not use the `HasViewCount` trait and the `service_experts` table has no `views_count` or `years_of_experience` columns. These calls will trigger `BadMethodCallException` or SQL errors when the routes are hit.
+
+#### Fix Required:
+Either add the missing columns/trait (e.g., include `HasViewCount` on the model and add `views_count` + `years_of_experience` columns) or remove the references and adjust the sorting logic. Add automated tests that hit the index/show routes to catch regressions.
+
+### 21. **SERVICE BOOKING PAYLOAD DOES NOT MATCH MODEL**
+**Severity:** HIGH 🟠  
+**Location:** `app/Http/Controllers/ServiceExpertController.php`, `app/Models/ServiceBooking.php`  
+**Risk Level:** HIGH
+
+#### Problem:
+`storeBooking()` validates `service_date`, `service_time`, `customer_name`, `customer_phone`, and `customer_email`, but the `ServiceBooking` model expects `preferred_date`, `preferred_time`, `contact_name`, `contact_phone`, and `contact_email`. None of the validated keys line up with the `$fillable` array, so mass assignment produces empty rows and booking creation fails.
+
+#### Fix Required:
+Standardize the booking field names between the controller, model, and database migration (rename columns or map the validated data before `ServiceBooking::create()`). Write a feature test that submits the booking form to verify the record persists with the correct columns.
+
+---
+
 ## 📊 Summary of Issues
 
 | Severity | Count | Estimated Fix Time |

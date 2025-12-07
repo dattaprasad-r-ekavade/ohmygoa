@@ -146,16 +146,24 @@ class ServiceExpertController extends Controller
             'location_id' => 'required|exists:locations,id',
             'description' => 'required|string',
             'services_offered' => 'required|string',
+            'service_areas' => 'nullable|string',
             'years_of_experience' => 'required|integer|min:0',
-            'certifications' => 'nullable|array',
-            'skills' => 'nullable|array',
+            'certifications' => 'nullable|string',
+            'skills' => 'nullable|string',
+            'languages_spoken' => 'nullable|string',
             'hourly_rate' => 'nullable|numeric|min:0',
+            'minimum_charge' => 'nullable|numeric|min:0',
             'contact_phone' => 'required|string|max:20',
             'contact_email' => 'nullable|email',
             'website' => 'nullable|url',
-            'address' => 'nullable|string',
-            'service_areas' => 'nullable|array',
-            'availability' => 'nullable|string',
+            'address' => 'nullable|string|max:255',
+            'availability' => 'nullable|string|max:255',
+            'insurance_details' => 'nullable|string',
+            'response_time_hours' => 'nullable|integer|min:1',
+            'completion_rate' => 'nullable|numeric|between:0,100',
+            'offers_emergency_service' => 'nullable|boolean',
+            'working_hours' => 'nullable|array',
+            'working_hours.*' => 'nullable|string|max:255',
             'profile_image' => 'nullable|image|max:2048',
             'portfolio.*' => 'nullable|image|max:2048',
         ]);
@@ -163,6 +171,13 @@ class ServiceExpertController extends Controller
         $validated['user_id'] = auth()->id();
         $validated['status'] = 'pending';
         $validated['is_available'] = true;
+        $validated['services_offered'] = $this->prepareListInput($request->input('services_offered'));
+        $validated['service_areas'] = $this->prepareListInput($request->input('service_areas'));
+        $validated['certifications'] = $this->prepareListInput($request->input('certifications'));
+        $validated['skills'] = $this->prepareListInput($request->input('skills'));
+        $validated['languages_spoken'] = $this->prepareListInput($request->input('languages_spoken'));
+        $validated['working_hours'] = $this->prepareWorkingHours($request->input('working_hours', []));
+        $validated['offers_emergency_service'] = $request->boolean('offers_emergency_service');
 
         if ($request->hasFile('profile_image')) {
             $validated['profile_image'] = $request->file('profile_image')->store('service-experts', 'public');
@@ -209,19 +224,35 @@ class ServiceExpertController extends Controller
             'location_id' => 'required|exists:locations,id',
             'description' => 'required|string',
             'services_offered' => 'required|string',
+            'service_areas' => 'nullable|string',
             'years_of_experience' => 'required|integer|min:0',
-            'certifications' => 'nullable|array',
-            'skills' => 'nullable|array',
+            'certifications' => 'nullable|string',
+            'skills' => 'nullable|string',
+            'languages_spoken' => 'nullable|string',
             'hourly_rate' => 'nullable|numeric|min:0',
+            'minimum_charge' => 'nullable|numeric|min:0',
             'contact_phone' => 'required|string|max:20',
             'contact_email' => 'nullable|email',
             'website' => 'nullable|url',
-            'address' => 'nullable|string',
-            'service_areas' => 'nullable|array',
-            'availability' => 'nullable|string',
+            'address' => 'nullable|string|max:255',
+            'availability' => 'nullable|string|max:255',
+            'insurance_details' => 'nullable|string',
+            'response_time_hours' => 'nullable|integer|min:1',
+            'completion_rate' => 'nullable|numeric|between:0,100',
+            'offers_emergency_service' => 'nullable|boolean',
+            'working_hours' => 'nullable|array',
+            'working_hours.*' => 'nullable|string|max:255',
             'is_available' => 'boolean',
             'profile_image' => 'nullable|image|max:2048',
         ]);
+
+        $validated['services_offered'] = $this->prepareListInput($request->input('services_offered'));
+        $validated['service_areas'] = $this->prepareListInput($request->input('service_areas'));
+        $validated['certifications'] = $this->prepareListInput($request->input('certifications'));
+        $validated['skills'] = $this->prepareListInput($request->input('skills'));
+        $validated['languages_spoken'] = $this->prepareListInput($request->input('languages_spoken'));
+        $validated['working_hours'] = $this->prepareWorkingHours($request->input('working_hours', []));
+        $validated['offers_emergency_service'] = $request->boolean('offers_emergency_service');
 
         if ($request->hasFile('profile_image')) {
             $validated['profile_image'] = $request->file('profile_image')->store('service-experts', 'public');
@@ -229,7 +260,7 @@ class ServiceExpertController extends Controller
 
         $serviceExpert->update($validated);
 
-        return redirect()->route('service-experts.show', $serviceExpert->slug)
+        return redirect()->route('service-experts.show', ['slug' => $serviceExpert->slug])
             ->with('success', 'Service expert profile updated successfully.');
     }
 
@@ -267,29 +298,37 @@ class ServiceExpertController extends Controller
             return back()->withErrors(['error' => 'This service expert is not currently available for bookings.']);
         }
 
+        if (!$request->filled('preferred_time')) {
+            $request->merge(['preferred_time' => null]);
+        }
+
         $validated = $request->validate([
-            'service_date' => 'required|date|after:today',
-            'service_time' => 'nullable|string',
             'service_description' => 'required|string',
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:20',
-            'customer_email' => 'nullable|email',
-            'customer_address' => 'nullable|string',
+            'preferred_date' => 'required|date|after:today',
+            'preferred_time' => 'nullable|date_format:H:i',
+            'location' => 'required|string|max:255',
+            'contact_name' => 'required|string|max:255',
+            'contact_phone' => 'required|string|max:20',
+            'contact_email' => 'nullable|email',
+            'special_instructions' => 'nullable|string',
             'estimated_hours' => 'nullable|numeric|min:1',
         ]);
+
+        $estimatedHours = $validated['estimated_hours'] ?? null;
+        unset($validated['estimated_hours']);
 
         $validated['service_expert_id'] = $serviceExpert->id;
         $validated['user_id'] = auth()->id();
         $validated['status'] = 'pending';
 
         // Calculate estimated price
-        if ($serviceExpert->hourly_rate && isset($validated['estimated_hours'])) {
-            $validated['estimated_price'] = $serviceExpert->hourly_rate * $validated['estimated_hours'];
+        if ($serviceExpert->hourly_rate && $estimatedHours) {
+            $validated['quoted_price'] = $serviceExpert->hourly_rate * $estimatedHours;
         }
 
         $booking = ServiceBooking::create($validated);
 
-        return redirect()->route('service-experts.show', $serviceExpert->slug)
+        return redirect()->route('service-experts.show', ['slug' => $serviceExpert->slug])
             ->with('success', 'Booking request submitted successfully. The service expert will contact you soon.');
     }
 
@@ -323,5 +362,44 @@ class ServiceExpertController extends Controller
             'bookmarked' => $isBookmarked,
             'message' => $isBookmarked ? 'Added to bookmarks' : 'Removed from bookmarks',
         ]);
+    }
+
+    /**
+     * Normalize comma or newline separated strings into arrays.
+     */
+    private function prepareListInput(null|string|array $value): array
+    {
+        if (is_array($value)) {
+            $items = $value;
+        } else {
+            $items = preg_split('/[\r\n,]+/', (string) $value);
+        }
+
+        return array_values(array_filter(array_map(static function ($item) {
+            return trim((string) $item);
+        }, $items ?? []), static function ($item) {
+            return $item !== '';
+        }));
+    }
+
+    /**
+     * Remove empty working-hour entries while preserving day keys.
+     */
+    private function prepareWorkingHours(?array $hours): array
+    {
+        if (!$hours) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($hours as $day => $value) {
+            $value = trim((string) $value);
+            if ($value !== '') {
+                $normalized[$day] = $value;
+            }
+        }
+
+        return $normalized;
     }
 }
