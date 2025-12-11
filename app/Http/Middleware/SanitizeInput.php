@@ -4,11 +4,26 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class SanitizeInput
 {
+    /**
+     * Fields that are allowed to contain HTML content.
+     * These should be handled with HTML Purifier or similar in their respective controllers.
+     */
+    protected $richTextFields = [
+        'description',
+        'content',
+        'body',
+        'bio',
+        'about',
+        'notes',
+        'instructions',
+        'terms',
+        'policy',
+    ];
+
     /**
      * Handle an incoming request.
      */
@@ -17,21 +32,7 @@ class SanitizeInput
         // Sanitize input data
         $input = $request->all();
         
-        array_walk_recursive($input, function (&$value) {
-            if (is_string($value)) {
-                // Remove null bytes
-                $value = str_replace(chr(0), '', $value);
-                
-                // Trim whitespace
-                $value = trim($value);
-                
-                // Convert special characters to HTML entities (XSS protection)
-                // Only for non-editor fields
-                if (!$this->isRichTextField($value)) {
-                    $value = htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                }
-            }
-        });
+        $this->sanitizeArray($input);
 
         $request->merge($input);
 
@@ -39,11 +40,44 @@ class SanitizeInput
     }
 
     /**
-     * Check if field contains rich text content.
+     * Recursively sanitize an array.
      */
-    protected function isRichTextField(string $value): bool
+    protected function sanitizeArray(array &$data, string $parentKey = ''): void
     {
-        // If value contains HTML tags, assume it's rich text
-        return $value !== strip_tags($value);
+        foreach ($data as $key => &$value) {
+            $fullKey = $parentKey ? "{$parentKey}.{$key}" : $key;
+            
+            if (is_array($value)) {
+                $this->sanitizeArray($value, $fullKey);
+            } elseif (is_string($value)) {
+                // Remove null bytes
+                $value = str_replace(chr(0), '', $value);
+                
+                // Trim whitespace
+                $value = trim($value);
+                
+                // Only allow HTML in explicitly whitelisted fields
+                if (!$this->isAllowedRichTextField($fullKey)) {
+                    // Convert special characters to HTML entities for XSS protection
+                    $value = htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                }
+                // Note: Rich text fields should be sanitized with HTML Purifier in the controller
+            }
+        }
+    }
+
+    /**
+     * Check if field is in the rich text whitelist.
+     */
+    protected function isAllowedRichTextField(string $fieldName): bool
+    {
+        // Check if the field name ends with any of the whitelisted names
+        foreach ($this->richTextFields as $richField) {
+            if (str_ends_with($fieldName, $richField)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

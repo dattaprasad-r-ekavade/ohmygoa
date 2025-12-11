@@ -22,3 +22,19 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Static HTML prototypes (not part of Laravel app)
+/*.html
+/bootstrap/
+/css/
+/js/
+/images/
+/demo/
+/admin/*.html
+/classifieds/*.html
+/jobs/*.html
+/news/*.html
+/places/*.html
+/service-experts/*.html
+backblue.gif
+fade.gif

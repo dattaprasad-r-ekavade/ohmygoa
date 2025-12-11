@@ -3,12 +3,26 @@
 namespace App\Providers;
 
 use App\Enums\UserRole;
+use App\Models\BusinessListing;
+use App\Models\ServiceExpert;
 use App\Models\User;
+use App\Policies\BusinessListingPolicy;
+use App\Policies\ServiceExpertPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
+    /**
+     * The policy mappings for the application.
+     *
+     * @var array<class-string, class-string>
+     */
+    protected $policies = [
+        BusinessListing::class => BusinessListingPolicy::class,
+        ServiceExpert::class => ServiceExpertPolicy::class,
+    ];
+
     /**
      * Register services.
      */
@@ -22,6 +36,11 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register policies
+        foreach ($this->policies as $model => $policy) {
+            Gate::policy($model, $policy);
+        }
+
         // Define Gates for user roles
         Gate::define('access-admin', function (User $user) {
             return $user->hasRole(UserRole::ADMIN);
